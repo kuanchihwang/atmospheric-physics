@@ -1,0 +1,6 @@
+[submodule "mmm-shared-physics"]
+	path = schemes/mmm_physics/mmm_shared_physics
+	url = https://github.com/kuanchihwang/mmm-physics.git
+	fxtag = develop/cam-sima
+	fxrequired = AlwaysRequired
+	fxDONOTUSEurl = https://github.com/NCAR/MMM-physics.git

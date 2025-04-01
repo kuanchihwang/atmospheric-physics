@@ -1,0 +1,6 @@
+[submodule "mmm-physics"]
+	path = schemes/mmm/mmm_physics
+	url = https://github.com/kuanchihwang/mmm-physics.git
+	fxtag = Conv-Perm-Suite-0.1.0
+	fxrequired = AlwaysRequired
+	fxDONOTUSEurl = https://github.com/NCAR/MMM-physics.git

@@ -59,6 +59,33 @@ contains
         rvblten(:, :) = 0.0_kind_phys
     end subroutine mmm_physics_accumulate_tendencies_run
 
+    !> \section arg_table_geopotential_height_wrt_sfc_at_if_to_msl_run Argument Table
+    !! \htmlinclude geopotential_height_wrt_sfc_at_if_to_msl_run.html
+    pure subroutine geopotential_height_wrt_sfc_at_if_to_msl_run( &
+            ncol, &
+            gravit, phis, zisfc, &
+            zimsl, &
+            errmsg, errflg)
+        use ccpp_kinds, only: kind_phys
+
+        integer, intent(in) :: ncol
+        real(kind_phys), intent(in) :: gravit, phis(:), zisfc(:, :)
+        real(kind_phys), intent(out) :: zimsl(:, :)
+        character(*), intent(out) :: errmsg
+        integer, intent(out) :: errflg
+
+        integer :: i
+
+        errmsg = ''
+        errflg = 0
+
+        ! Convert geopotential height wrt surface at interface to geopotential height wrt mean sea level at interface,
+        ! in accordance with its normal definition.
+        do i = 1, ncol
+            zimsl(i, :) = phis(i) / gravit + zisfc(i, :)
+        end do
+    end subroutine geopotential_height_wrt_sfc_at_if_to_msl_run
+
     !> \section arg_table_geopotential_height_wrt_sfc_to_msl_run Argument Table
     !! \htmlinclude geopotential_height_wrt_sfc_to_msl_run.html
     pure subroutine geopotential_height_wrt_sfc_to_msl_run( &

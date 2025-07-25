@@ -4,11 +4,44 @@ module cu_ntiedtke_compat
     implicit none
 
     private
+    public :: cu_ntiedtke_compat_pre_run
     public :: cu_ntiedtke_compat_init
     public :: cu_ntiedtke_compat_run
     public :: cu_ntiedtke_diagnostics_init
     public :: cu_ntiedtke_diagnostics_run
 contains
+    !> \section arg_table_cu_ntiedtke_compat_pre_run Argument Table
+    !! \htmlinclude cu_ntiedtke_compat_pre_run.html
+    subroutine cu_ntiedtke_compat_pre_run( &
+            rthdynten, rthblten, rthratenlw, rthratensw, exner, &
+            rqvdynten, rqvblten, &
+            landfrac, &
+            ptf, pqvf, hfx, evap, zprecc, &
+            lndj, &
+            errmsg, errflg)
+        use ccpp_kinds, only: kind_phys
+
+        real(kind_phys), intent(in) :: rthdynten(:, :), rthblten(:, :), rthratenlw(:, :), rthratensw(:, :), exner(:, :)
+        real(kind_phys), intent(in) :: rqvdynten(:, :), rqvblten(:, :)
+        real(kind_phys), intent(in) :: landfrac(:)
+        real(kind_phys), intent(out) :: ptf(:, :), pqvf(:, :), hfx(:), evap(:), zprecc(:)
+        integer, intent(out) :: lndj(:)
+        character(*), intent(out) :: errmsg
+        integer, intent(out) :: errflg
+
+        errmsg = ''
+        errflg = 0
+
+        ptf(:, :) = (rthdynten(:, :) + rthblten(:, :) + rthratenlw(:, :) + rthratensw(:, :)) * exner(:, :)
+        pqvf(:, :) = rqvdynten(:, :) + rqvblten(:, :)
+
+        where (landfrac >= 0.5_kind_phys)
+            lndj = 1
+        elsewhere
+            lndj = 0
+        end where
+    end subroutine cu_ntiedtke_compat_pre_run
+
     !> \section arg_table_cu_ntiedtke_compat_init Argument Table
     !! \htmlinclude cu_ntiedtke_compat_init.html
     subroutine cu_ntiedtke_compat_init( &
@@ -68,34 +101,19 @@ contains
 
         errmsg = ''
         errflg = 0
-
-        ! The "bl_gwdo" physics scheme makes a distinction between X/Y winds and eastward/northward winds. See
-        ! the "cu_ntiedtke_compat_pre" interstitial scheme for details. However, here we just refer to its diagnostics as
-        ! eastward/northward to make them more familiar to CAM-SIMA users.
-        call history_add_field('bl_gwdo_dtaux3d', 'tendency_of_eastward_wind_due_to_orographic_gwd', 'lev', 'avg', 'm s-2')
-        call history_add_field('bl_gwdo_dtauy3d', 'tendency_of_northward_wind_due_to_orographic_gwd', 'lev', 'avg', 'm s-2')
-        call history_add_field('bl_gwdo_dusfcg', 'atmosphere_eastward_stress_due_to_orographic_gwd', horiz_only, 'avg', 'Pa')
-        call history_add_field('bl_gwdo_dvsfcg', 'atmosphere_northward_stress_due_to_orographic_gwd', horiz_only, 'avg', 'Pa')
     end subroutine cu_ntiedtke_diagnostics_init
 
     !> \section arg_table_cu_ntiedtke_diagnostics_run Argument Table
     !! \htmlinclude cu_ntiedtke_diagnostics_run.html
     subroutine cu_ntiedtke_diagnostics_run( &
-            dtaux3d, dtauy3d, dusfcg, dvsfcg, &
             errmsg, errflg)
         use cam_history, only: history_out_field
         use ccpp_kinds, only: kind_phys
 
-        real(kind_phys), intent(in) :: dtaux3d(:, :), dtauy3d(:, :), dusfcg(:), dvsfcg(:)
         character(*), intent(out) :: errmsg
         integer, intent(out) :: errflg
 
         errmsg = ''
         errflg = 0
-
-        call history_out_field('bl_gwdo_dtaux3d', dtaux3d)
-        call history_out_field('bl_gwdo_dtauy3d', dtauy3d)
-        call history_out_field('bl_gwdo_dusfcg', dusfcg)
-        call history_out_field('bl_gwdo_dvsfcg', dvsfcg)
     end subroutine cu_ntiedtke_diagnostics_run
 end module cu_ntiedtke_compat
